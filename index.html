@@ -1,0 +1,1205 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TecnoDEV - Sistema de Gestão</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Segoe UI', 'Inter', sans-serif; }
+        body { background: #DEEFE7; min-height: 100vh; width: 100%; }
+        .app-container { display: flex; min-height: 100vh; width: 100%; }
+        .sidebar { width: 280px; background: #002333; color: white; display: flex; flex-direction: column; position: fixed; height: 100vh; overflow-y: auto; transition: all 0.3s; z-index: 100; }
+        .logo { padding: 1.8rem 1.5rem; border-bottom: 2px solid #159A9C; margin-bottom: 1.5rem; }
+        .logo h2 { font-size: 1.8rem; color: white; }
+        .logo p { font-size: 0.8rem; color: #B4BEC9; margin-top: 0.3rem; }
+        .user-info { padding: 1rem 1.5rem; background: rgba(21,154,156,0.2); margin: 0 1rem 1rem 1rem; border-radius: 1rem; border-left: 3px solid #159A9C; display: flex; align-items: center; gap: 12px; }
+        .user-info i { font-size: 2rem; color: #159A9C; }
+        .user-info .user-details { flex: 1; }
+        .user-info .user-name { font-weight: 600; font-size: 1rem; }
+        .user-info .user-role { font-size: 0.8rem; color: #B4BEC9; margin-top: 0.3rem; }
+        .nav-menu { flex: 1; padding: 0 1rem; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 0.9rem 1rem; margin: 0.3rem 0; border-radius: 0.8rem; cursor: pointer; transition: all 0.2s; color: #DEEFE7; }
+        .nav-item i { width: 20px; font-size: 1.1rem; }
+        .nav-item:hover { background: rgba(21,154,156,0.3); }
+        .nav-item.active { background: #159A9C; color: white; }
+        .nav-item .text { font-weight: 500; }
+        .logout-btn { margin: 1.5rem; padding: 0.8rem; background: rgba(180,190,201,0.2); border: 1px solid #B4BEC9; border-radius: 0.8rem; text-align: center; cursor: pointer; transition: all 0.2s; color: #DEEFE7; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .logout-btn:hover { background: #159A9C; border-color: #159A9C; }
+        .main-content { flex: 1; margin-left: 280px; background: #FFFFFF; min-height: 100vh; }
+        .content-header { background: white; padding: 1.5rem 2rem; border-bottom: 1px solid #E2E9F0; }
+        .content-header h1 { color: #002333; font-size: 1.8rem; }
+        .content-header p { color: #5c7e8c; margin-top: 0.3rem; }
+        .content-body { padding: 2rem; }
+        .card { background: white; border-radius: 1rem; border: 1px solid #EAF0F5; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,35,51,0.05); }
+        .card-title { font-size: 1.2rem; font-weight: 600; color: #002333; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #159A9C; display: inline-block; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.5rem; }
+        .stat-card { background: #F9FCFA; border-radius: 1rem; padding: 1.2rem; border-left: 4px solid #159A9C; }
+        .stat-card h3 { font-size: 0.85rem; color: #5c7e8c; margin-bottom: 0.5rem; }
+        .stat-card .value { font-size: 2rem; font-weight: 700; color: #002333; }
+        .badge { display: inline-block; padding: 0.2rem 0.7rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 600; }
+        .badge-success { background: #DEEFE7; color: #159A9C; }
+        .badge-warning { background: #FFF3E0; color: #e67e22; }
+        .badge-danger { background: #FFE5E5; color: #c0392b; }
+        .badge-info { background: #E3F2FD; color: #2980b9; }
+        .badge-primary { background: #159A9C; color: white; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #E2E9F0; }
+        th { color: #5c7e8c; font-weight: 600; font-size: 0.85rem; }
+        .btn { padding: 0.6rem 1.2rem; border-radius: 0.5rem; border: none; cursor: pointer; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: #159A9C; color: white; }
+        .btn-primary:hover { background: #0f7a7c; transform: translateY(-1px); }
+        .btn-secondary { background: #DEEFE7; color: #002333; }
+        .btn-secondary:hover { background: #B4BEC9; }
+        .btn-danger { background: #c0392b; color: white; }
+        .btn-danger:hover { background: #a93226; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: #002333; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.7rem; border: 1px solid #B4BEC9; border-radius: 0.5rem; font-size: 0.9rem; }
+        .search-bar { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .search-bar input { flex: 1; padding: 0.7rem; border: 1px solid #B4BEC9; border-radius: 0.5rem; }
+        .progress-bar-container { background: #E2E9F0; border-radius: 1rem; height: 2rem; overflow: hidden; margin: 1rem 0; }
+        .progress-bar { background: #159A9C; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: 600; transition: width 0.3s ease; }
+        .posto-card { cursor: pointer; transition: transform 0.2s; }
+        .posto-card:hover { transform: translateY(-2px); }
+
+        /* ===== LOGIN PAGE ===== */
+        #loginPage {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            width: 100%;
+            background: linear-gradient(135deg, #001a26 0%, #002333 50%, #003347 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        #loginPage::before {
+            content: '';
+            position: absolute;
+            top: -120px;
+            right: -120px;
+            width: 420px;
+            height: 420px;
+            border-radius: 50%;
+            background: rgba(21,154,156,0.12);
+            pointer-events: none;
+        }
+        #loginPage::after {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            left: -100px;
+            width: 340px;
+            height: 340px;
+            border-radius: 50%;
+            background: rgba(21,154,156,0.08);
+            pointer-events: none;
+        }
+        .login-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 900px;
+            min-height: 520px;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.45);
+            z-index: 1;
+        }
+        .login-brand {
+            flex: 1;
+            background: linear-gradient(160deg, #159A9C 0%, #0f7a7c 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .login-brand::before {
+            content: '';
+            position: absolute;
+            top: -60px; left: -60px;
+            width: 260px; height: 260px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.07);
+        }
+        .login-brand::after {
+            content: '';
+            position: absolute;
+            bottom: -40px; right: -40px;
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+        }
+        .login-brand-logo {
+            width: 72px; height: 72px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .login-brand-logo i { font-size: 2.2rem; color: white; }
+        .login-brand h1 { font-size: 2.2rem; font-weight: 800; color: white; letter-spacing: 0.5px; text-align: center; }
+        .login-brand p { color: rgba(255,255,255,0.8); font-size: 0.95rem; margin-top: 0.5rem; text-align: center; }
+        .login-brand-divider { width: 40px; height: 3px; background: rgba(255,255,255,0.4); border-radius: 2px; margin: 1.5rem auto; }
+        .login-brand-features { list-style: none; width: 100%; margin-top: 0.5rem; }
+        .login-brand-features li { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.85); font-size: 0.88rem; padding: 0.45rem 0; }
+        .login-brand-features li i { color: rgba(255,255,255,0.6); width: 16px; font-size: 0.85rem; }
+        .login-form-panel {
+            width: 380px; flex-shrink: 0;
+            background: #ffffff;
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 3rem 2.5rem;
+        }
+        .login-form-panel .login-greeting { font-size: 1.5rem; font-weight: 700; color: #002333; margin-bottom: 0.4rem; }
+        .login-form-panel .login-subtext { font-size: 0.88rem; color: #5c7e8c; margin-bottom: 2rem; }
+        .login-field { margin-bottom: 1.2rem; }
+        .login-field label { display: block; font-size: 0.82rem; font-weight: 600; color: #002333; margin-bottom: 0.5rem; letter-spacing: 0.3px; text-transform: uppercase; }
+        .login-input-wrap { position: relative; }
+        .login-input-wrap i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #B4BEC9; font-size: 0.9rem; pointer-events: none; }
+        .login-input-wrap input { width: 100%; padding: 0.75rem 0.9rem 0.75rem 2.4rem; border: 1.5px solid #E2E9F0; border-radius: 0.6rem; font-size: 0.95rem; color: #002333; background: #F9FCFA; transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
+        .login-input-wrap input:focus { border-color: #159A9C; box-shadow: 0 0 0 3px rgba(21,154,156,0.12); background: #fff; }
+        .login-input-wrap input::placeholder { color: #B4BEC9; }
+        .login-submit { width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #159A9C, #0f7a7c); color: white; border: none; border-radius: 0.6rem; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 14px rgba(21,154,156,0.35); }
+        .login-submit:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(21,154,156,0.45); }
+        .login-footer-note { margin-top: 1.8rem; text-align: center; font-size: 0.78rem; color: #B4BEC9; }
+        @media (max-width: 700px) {
+            .login-brand { display: none; }
+            .login-form-panel { width: 100%; border-radius: 1rem; }
+            .login-wrapper { border-radius: 1rem; max-width: 420px; }
+        }
+        /* ===================== */
+
+        /* [DRIVE] Toast de notificação do Drive */
+        #driveToast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #002333;
+            color: white;
+            padding: 0.9rem 1.4rem;
+            border-radius: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+            z-index: 9999;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            max-width: 340px;
+        }
+        #driveToast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #driveToast i { font-size: 1.2rem; flex-shrink: 0; }
+        #driveToast.toast-ok   i { color: #159A9C; }
+        #driveToast.toast-erro i { color: #c0392b; }
+        #driveToast.toast-info i { color: #e67e22; }
+        /* ============================= */
+
+        .posto-status { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 1px solid #E2E9F0; }
+        .posto-status:last-child { border-bottom: none; }
+        .posto-nome { font-weight: 600; color: #002333; }
+        .posto-situacao { font-size: 0.85rem; color: #5c7e8c; }
+        .posto-situacao.ocioso { color: #159A9C; }
+        .posto-situacao.ocupado { color: #e67e22; }
+        .non-conformidade-card { border-left: 4px solid #c0392b; margin-bottom: 1rem; }
+        .documento-card { border-left: 4px solid #159A9C; cursor: pointer; }
+        .documento-card:hover { background: #F0FAF8; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; border-radius: 1rem; width: 92%; max-width: 960px; height: 90vh; display: flex; flex-direction: column; padding: 1.5rem; }
+        .modal-content iframe { flex: 1; border: none; border-radius: 0.5rem; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); position: fixed; }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- [DRIVE] Toast de feedback do envio ao Google Drive -->
+<div id="driveToast">
+    <i class="fa-brands fa-google-drive"></i>
+    <span id="driveToastMsg">Enviando PDF ao Google Drive...</span>
+</div>
+<!-- ===================================================== -->
+
+<div class="app-container" id="appContainer" style="display: none;">
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <h2>TecnoDEV</h2>
+            <p>Sistema de Gestão</p>
+        </div>
+        <div class="user-info" id="userInfo">
+            <i class="fa-solid fa-circle-user"></i>
+            <div class="user-details">
+                <div class="user-name" id="userName"></div>
+                <div class="user-role" id="userRole"></div>
+            </div>
+        </div>
+        <div class="nav-menu" id="navMenu"></div>
+        <div class="logout-btn" id="logoutBtn">
+            <i class="fa-solid fa-sign-out-alt"></i> Sair
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="content-header">
+            <h1 id="pageTitle"></h1>
+            <p id="pageDescription"></p>
+        </div>
+        <div class="content-body" id="contentBody"></div>
+    </div>
+</div>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage">
+    <div class="login-wrapper">
+        <div class="login-brand">
+            <div class="login-brand-logo">
+                <i class="fa-solid fa-industry"></i>
+            </div>
+            <h1>TecnoDEV</h1>
+            <p>Sistema de Gestão Industrial</p>
+            <div class="login-brand-divider"></div>
+            <ul class="login-brand-features">
+                <li><i class="fa-solid fa-circle-check"></i> Controle de ordens de produção</li>
+                <li><i class="fa-solid fa-circle-check"></i> Rastreamento em tempo real</li>
+                <li><i class="fa-solid fa-circle-check"></i> Gestão de não conformidades</li>
+                <li><i class="fa-solid fa-circle-check"></i> Relatórios e documentos PDF</li>
+            </ul>
+        </div>
+        <div class="login-form-panel">
+            <p class="login-greeting">Bem-vindo de volta</p>
+            <p class="login-subtext">Insira suas credenciais para acessar o sistema.</p>
+            <form id="loginForm">
+                <div class="login-field">
+                    <label>Matrícula</label>
+                    <div class="login-input-wrap">
+                        <i class="fa-solid fa-id-card"></i>
+                        <input type="text" id="matricula" required placeholder="Digite sua matrícula">
+                    </div>
+                </div>
+                <div class="login-field">
+                    <label>Senha</label>
+                    <div class="login-input-wrap">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="senha" required placeholder="••••••••">
+                    </div>
+                </div>
+                <button type="submit" class="login-submit">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar
+                </button>
+            </form>
+            <p class="login-footer-note">© 2025 TecnoDEV — Acesso restrito a usuários autorizados</p>
+        </div>
+    </div>
+</div>
+
+<div id="pdfModal" class="modal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3><i class="fa-solid fa-file-pdf" style="color:#c0392b;"></i> Visualizar Documento</h3>
+            <button class="btn btn-secondary" onclick="fecharModal()"><i class="fa-solid fa-times"></i> Fechar</button>
+        </div>
+        <iframe id="pdfFrame" src=""></iframe>
+    </div>
+</div>
+
+<script>
+
+// ============================================================
+// [DRIVE] CONFIGURAÇÃO — cole aqui a URL do seu Apps Script
+//         após publicar o Code.gs como Aplicativo da Web
+// ============================================================
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZW-XYzVwiSm_ROgAFaVCrtANOf-3p3GWq6GTGMUufbLAqQLgDPjLx2hdi3m7MfWP8DA/exec';
+// ============================================================
+
+// [DRIVE] Exibe um toast de notificação na tela
+function mostrarToast(msg, tipo) {
+    const toast = document.getElementById('driveToast');
+    const msgEl = document.getElementById('driveToastMsg');
+    toast.className = '';
+    toast.classList.add('toast-' + (tipo || 'info'));
+    msgEl.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+// [DRIVE] Converte um Blob para string base64
+function blobParaBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.onerror   = reject;
+        reader.readAsDataURL(blob);
+    });
+}
+
+// [DRIVE] Envia o PDF ao Google Drive via Apps Script (assíncrono / não bloqueia a tela)
+async function enviarPDFParaDrive(pdfBlob, nomeArquivo, codigoOP, nomeCliente) {
+    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT') {
+        console.warn('[Drive] URL do Apps Script não configurada.');
+        return;
+    }
+    try {
+        mostrarToast('Enviando PDF ao Google Drive…', 'info');
+        const base64 = await blobParaBase64(pdfBlob);
+        const payload = JSON.stringify({
+            pdf:        base64,
+            nome:       nomeArquivo,
+            codigo_op:  codigoOP,
+            cliente:    nomeCliente,
+            criado_por: currentUser?.nome || '-'
+        });
+        // Usa text/plain para evitar preflight CORS no Apps Script
+        const resp = await fetch(APPS_SCRIPT_URL, {
+            method:  'POST',
+            body:    payload,
+            headers: { 'Content-Type': 'text/plain' }
+        });
+        const data = await resp.json();
+        if (data.ok) {
+            mostrarToast('✅ PDF salvo no Google Drive: ' + data.arquivo, 'ok');
+            console.log('[Drive] Arquivo salvo:', data.url);
+        } else {
+            mostrarToast('⚠️ Erro ao salvar no Drive: ' + data.erro, 'erro');
+            console.warn('[Drive] Erro:', data.erro);
+        }
+    } catch (err) {
+        mostrarToast('⚠️ Não foi possível conectar ao Google Drive.', 'erro');
+        console.warn('[Drive] Falha na requisição:', err);
+    }
+}
+// ============================================================
+
+const POSTOS_TRABALHO = [
+    { id: 1, nome: "Corte",       ordem: 1 },
+    { id: 2, nome: "Caldeiraria", ordem: 2 },
+    { id: 3, nome: "Limpeza",     ordem: 3 },
+    { id: 4, nome: "Montagem",    ordem: 4 },
+    { id: 5, nome: "Pintura",     ordem: 5 },
+    { id: 6, nome: "Embalagem",   ordem: 6 },
+    { id: 7, nome: "Expedição",   ordem: 7 }
+];
+
+const database = {
+    usuarios: [
+        { id: 1, nome: "Rafael da Silva",  matricula: "OP001", senha: "123", perfil: "operador",   posto_id: 1 },
+        { id: 2, nome: "Carlos Oliveira",  matricula: "OP002", senha: "123", perfil: "operador",   posto_id: 2 },
+        { id: 3, nome: "Mariana Santos",   matricula: "OP003", senha: "123", perfil: "operador",   posto_id: 3 },
+        { id: 4, nome: "Roberto Almeida", matricula: "SP001", senha: "123", perfil: "supervisor"              },
+        { id: 5, nome: "Ana Paula Costa",  matricula: "GE001", senha: "123", perfil: "gerente"                }
+    ],
+    clientes: [
+        { id: 1, nome: "CEMIG",      cnpj: "12.345.678/0001-90", contato: "João Silva",    email: "joao@cemig.com.br"    },
+        { id: 2, nome: "Magotteaux", cnpj: "23.456.789/0001-01", contato: "Pedro Santos",  email: "pedro@magotteaux.com" },
+        { id: 3, nome: "Stellantis", cnpj: "34.567.890/0001-12", contato: "Maria Oliveira",email: "maria@stellantis.com" }
+    ],
+    produtos: [
+        { id: 1, nome: "Transformador 100kVA", codigo: "TRF-001", descricao: "Transformador trifásico 100kVA" },
+        { id: 2, nome: "Regulador 50kVA",      codigo: "REG-001", descricao: "Regulador de tensão 50kVA"      },
+        { id: 3, nome: "Transformador 500kVA", codigo: "TRF-002", descricao: "Transformador seco 500kVA"      }
+    ],
+    ordens_producao: [],
+    movimentacoes: [],
+    documentos: [],
+    naoConformidades: []
+};
+
+let currentUser = null;
+
+function generateOPCode() { return `OP-${String(database.ordens_producao.length + 1).padStart(4, '0')}`; }
+function getPostoById(id) { return POSTOS_TRABALHO.find(p => p.id === id); }
+function getProgressoOrdem(ordem) {
+    if (!ordem.posto_atual) return 0;
+    const posto = POSTOS_TRABALHO.find(p => p.id === ordem.posto_atual);
+    return posto ? (posto.ordem - 1) / POSTOS_TRABALHO.length * 100 : 0;
+}
+function avancarOrdem(ordemId) {
+    const ordem = database.ordens_producao.find(o => o.id === ordemId);
+    if (!ordem || ordem.status === "Concluída") return false;
+    const postoAtual = POSTOS_TRABALHO.find(p => p.id === ordem.posto_atual);
+    if (!postoAtual) return false;
+    const proximo = POSTOS_TRABALHO.find(p => p.ordem === postoAtual.ordem + 1);
+    if (proximo) {
+        ordem.posto_atual = proximo.id;
+        ordem.status      = "Em andamento";
+        ordem.etapa_atual = proximo.nome;
+    } else {
+        ordem.status      = "Concluída";
+        ordem.data_fim    = new Date().toLocaleString();
+        ordem.etapa_atual = "Finalizado";
+    }
+    return true;
+}
+
+// ==================== GERAÇÃO DE PDF ====================
+function gerarPDFOrdem(ordem) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const cliente     = database.clientes.find(c => c.id === ordem.cliente_id);
+    const produto     = database.produtos.find(p => p.id === ordem.produto_id);
+    const dataCriacao = new Date(ordem.data_criacao).toLocaleString('pt-BR');
+    const geradoEm    = new Date().toLocaleString('pt-BR');
+
+    const corPrimaria = [0, 35, 51];
+    const corAcento   = [21, 154, 156];
+    const corCinza    = [92, 126, 140];
+    const corBranco   = [255, 255, 255];
+    const corFundoCel = [249, 252, 250];
+    const pw = 210;
+
+    doc.setFillColor(...corPrimaria);
+    doc.rect(0, 0, pw, 38, 'F');
+    doc.setTextColor(...corBranco);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.text('TecnoDEV', 14, 16);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text('Sistema de Gestão', 14, 22);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('ORDEM DE PRODUÇÃO', pw - 14, 16, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(ordem.codigo_op, pw - 14, 23, { align: 'right' });
+    doc.setFontSize(8);
+    doc.text(`Gerado em: ${geradoEm}`, pw - 14, 29, { align: 'right' });
+
+    doc.setFillColor(...corAcento);
+    doc.rect(0, 38, pw, 2, 'F');
+
+    let yPos = 50;
+    const marginL = 14;
+    const marginR = pw - 14;
+    const colMid  = pw / 2;
+    const halfW   = colMid - marginL - 3;
+    const fullW   = marginR - marginL;
+
+    function drawField(label, value, x, y, width) {
+        doc.setFillColor(...corFundoCel);
+        doc.setDrawColor(220, 228, 235);
+        doc.roundedRect(x, y, width, 14, 1.5, 1.5, 'FD');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7);
+        doc.setTextColor(...corCinza);
+        doc.text(label.toUpperCase(), x + 3, y + 5);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(...corPrimaria);
+        doc.text(String(value || '-'), x + 3, y + 11);
+    }
+
+    function sectionTitle(title, y) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(...corAcento);
+        doc.text(title, marginL, y);
+        doc.setDrawColor(...corAcento);
+        doc.setLineWidth(0.4);
+        doc.line(marginL, y + 2, marginR, y + 2);
+    }
+
+    sectionTitle('Identificação da Ordem', yPos);
+    yPos += 6;
+    drawField('Código da OP', ordem.codigo_op, marginL, yPos, halfW);
+    yPos += 18;
+    drawField('Data de Criação', dataCriacao, marginL, yPos, halfW);
+    yPos += 22;
+
+    sectionTitle('Dados do Cliente', yPos);
+    yPos += 6;
+    drawField('Razão Social', cliente?.nome, marginL, yPos, fullW);
+    yPos += 18;
+    drawField('CNPJ', cliente?.cnpj, marginL, yPos, halfW);
+    drawField('Contato', cliente?.contato, colMid + 3, yPos, halfW);
+    yPos += 22;
+
+    sectionTitle('Produto', yPos);
+    yPos += 6;
+    drawField('Nome do Produto', produto?.nome, marginL, yPos, halfW);
+    drawField('Código', produto?.codigo, colMid + 3, yPos, halfW);
+    yPos += 18;
+    drawField('Descrição', produto?.descricao, marginL, yPos, fullW);
+    yPos += 18;
+    drawField('Quantidade', `${ordem.quantidade} unidade(s)`, marginL, yPos, halfW);
+    yPos += 22;
+
+    sectionTitle('Responsável pela Emissão', yPos);
+    yPos += 6;
+    drawField('Emitido por', currentUser?.nome || '-', marginL, yPos, halfW);
+    drawField('Perfil', (currentUser?.perfil || '-').toUpperCase(), colMid + 3, yPos, halfW);
+    yPos += 22;
+
+    doc.setDrawColor(180, 190, 201);
+    doc.setLineWidth(0.3);
+    doc.line(marginL, yPos + 14, marginL + 70, yPos + 14);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...corCinza);
+    doc.text('Assinatura do Responsável', marginL, yPos + 19);
+    doc.line(colMid + 3, yPos + 14, colMid + 3 + 70, yPos + 14);
+    doc.text('Assinatura do Supervisor', colMid + 3, yPos + 19);
+
+    const footerY = 287;
+    doc.setFillColor(...corPrimaria);
+    doc.rect(0, footerY - 4, pw, 12, 'F');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(...corBranco);
+    doc.text(`TecnoDEV © ${new Date().getFullYear()} — Documento gerado automaticamente`, pw / 2, footerY + 2, { align: 'center' });
+
+    const pdfBlob = doc.output('blob');
+    const blobUrl = URL.createObjectURL(pdfBlob);
+
+    database.documentos.push({
+        id:           database.documentos.length + 1,
+        ordem_id:     ordem.id,
+        codigo_op:    ordem.codigo_op,
+        tipo:         'ordem_producao',
+        data_criacao: new Date().toISOString(),
+        criado_por:   currentUser.nome,
+        blobUrl
+    });
+
+    // [DRIVE] Envia o PDF ao Google Drive em segundo plano (não bloqueia a tela)
+    const nomeArquivo = `${ordem.codigo_op}_${(cliente?.nome || 'cliente').replace(/\s+/g,'_')}.pdf`;
+    enviarPDFParaDrive(pdfBlob, nomeArquivo, ordem.codigo_op, cliente?.nome || '-');
+    // ================================================================
+
+    alert(`✅ PDF da ordem ${ordem.codigo_op} gerado com sucesso!\nDisponível na seção "Ordens".`);
+    return true;
+}
+
+function visualizarDocumento(docId) {
+    const documento = database.documentos.find(d => d.id === docId);
+    if (!documento?.blobUrl) { alert('Documento não disponível.'); return; }
+    document.getElementById('pdfFrame').src = documento.blobUrl;
+    document.getElementById('pdfModal').style.display = 'flex';
+}
+
+function fecharModal() {
+    document.getElementById('pdfModal').style.display = 'none';
+    document.getElementById('pdfFrame').src = '';
+}
+
+function registrarNaoConformidade(tipo) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width:500px; height:auto;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
+                <h3>Registrar NC — ${tipo === 'equipamento' ? 'Equipamento' : 'Produção'}</h3>
+                <button class="btn btn-secondary" onclick="this.closest('.modal').remove()"><i class="fa-solid fa-times"></i> Fechar</button>
+            </div>
+            <form id="formNaoConformidade">
+                <div class="form-group">
+                    <label>Ordem de Produção (se aplicável)</label>
+                    <select id="ncOrdemId">
+                        <option value="">Nenhuma</option>
+                        ${database.ordens_producao.map(o => `<option value="${o.id}">${o.codigo_op}</option>`).join('')}
+                    </select>
+                </div>
+                ${tipo === 'equipamento' ? `
+                <div class="form-group">
+                    <label>Equipamento</label>
+                    <select id="ncEquipamento" required>
+                        <option value="">Selecione</option>
+                        <option>Guilhotina</option><option>Prensa</option><option>Solda MIG</option>
+                        <option>Torno</option><option>Furadeira</option><option>Ponte Rolante</option><option>Compressor</option>
+                    </select>
+                </div>` : ''}
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <textarea id="ncDescricao" rows="4" required placeholder="Descreva o problema..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Severidade</label>
+                    <select id="ncSeveridade" required>
+                        <option value="baixa">Baixa</option>
+                        <option value="media">Média</option>
+                        <option value="alta">Alta</option>
+                        <option value="critica">Crítica</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-danger" style="width:100%;">
+                    <i class="fa-solid fa-exclamation-triangle"></i> Registrar
+                </button>
+            </form>
+        </div>`;
+    document.body.appendChild(modal);
+    document.getElementById('formNaoConformidade').addEventListener('submit', (e) => {
+        e.preventDefault();
+        database.naoConformidades.push({
+            id: database.naoConformidades.length + 1, tipo,
+            ordem_id:    document.getElementById('ncOrdemId')?.value || null,
+            equipamento: tipo === 'equipamento' ? document.getElementById('ncEquipamento')?.value : null,
+            descricao:   document.getElementById('ncDescricao').value,
+            severidade:  document.getElementById('ncSeveridade').value,
+            status: 'aberta', data_registro: new Date().toLocaleString(),
+            registrado_por: currentUser.nome, registrado_por_id: currentUser.id,
+            resolvido_em: null, resolvido_por: null, solucao: null
+        });
+        alert('Não conformidade registrada!');
+        modal.remove();
+    });
+}
+
+const menus = {
+    operador: [
+        { id: "dashboardOperador", nome: "Meu Painel",                 icone: "fa-solid fa-gauge-high" },
+        { id: "minhasOrdens",      nome: "Minhas Ordens",              icone: "fa-solid fa-list" },
+        { id: "documentos",        nome: "Ordens",                     icone: "fa-solid fa-file-pdf" },
+        { id: "registrarNC",       nome: "Registrar Não Conformidade", icone: "fa-solid fa-exclamation-triangle" }
+    ],
+    supervisor: [
+        { id: "dashboardSupervisor", nome: "Dashboard Geral",          icone: "fa-solid fa-chart-line" },
+        { id: "rastreamentoOrdens",  nome: "Rastrear Ordens",          icone: "fa-solid fa-magnifying-glass" },
+        { id: "visaoPostos",         nome: "Visão dos Postos",         icone: "fa-solid fa-city" },
+        { id: "documentos",          nome: "Ordens",                   icone: "fa-solid fa-file-pdf" },
+        { id: "naoConformidades",    nome: "Não Conformidades",        icone: "fa-solid fa-exclamation-triangle" }
+    ],
+    gerente: [
+        { id: "dashboardGerente",  nome: "Dashboard Gerente",          icone: "fa-solid fa-chart-pie" },
+        { id: "rastreamentoOrdens",nome: "Rastrear Ordens",            icone: "fa-solid fa-magnifying-glass" },
+        { id: "visaoPostos",       nome: "Visão dos Postos",           icone: "fa-solid fa-city" },
+        { id: "cadastrarOperador", nome: "Cadastrar Operador",         icone: "fa-solid fa-users" },
+        { id: "criarOrdem",        nome: "Nova Ordem",                 icone: "fa-solid fa-file-circle-plus" },
+        { id: "documentos",        nome: "Ordens",                     icone: "fa-solid fa-file-pdf" },
+        { id: "naoConformidades",  nome: "Não Conformidades",         icone: "fa-solid fa-exclamation-triangle" }
+    ]
+};
+
+const screens = {
+    dashboardOperador: {
+        title: "Meu Painel de Produção",
+        description: () => `Posto atual: ${getPostoById(currentUser?.posto_id)?.nome || 'Não definido'}`,
+        render: () => {
+            const minhasOrdens = database.ordens_producao.filter(o => o.posto_atual === currentUser.posto_id && o.status !== "Concluída");
+            document.getElementById('contentBody').innerHTML = `
+                <div class="card">
+                    <h3 class="card-title"><i class="fa-solid fa-chalkboard-user"></i> Ordem Atual</h3>
+                    ${minhasOrdens.length > 0 ? minhasOrdens.map(ordem => {
+                        const c = database.clientes.find(c => c.id === ordem.cliente_id);
+                        const p = database.produtos.find(p => p.id === ordem.produto_id);
+                        return `<div class="stat-card">
+                            <h3>Código da Ordem</h3>
+                            <div class="value">${ordem.codigo_op}</div>
+                            <p><strong>Cliente:</strong> ${c?.nome}</p>
+                            <p><strong>Produto:</strong> ${p?.nome}</p>
+                            <p><strong>Quantidade:</strong> ${ordem.quantidade} unidade(s)</p>
+                            <p><strong>Status:</strong> <span class="badge badge-warning">${ordem.status}</span></p>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" style="width:${getProgressoOrdem(ordem)}%">${Math.round(getProgressoOrdem(ordem))}%</div>
+                            </div>
+                            <div style="margin-top:1rem; display:flex; gap:10px; flex-wrap:wrap;">
+                                <button class="btn btn-primary" onclick="atualizarStatusOrdem(${ordem.id},'Entrada')"><i class="fa-solid fa-right-to-bracket"></i> Entrada</button>
+                                <button class="btn btn-secondary" onclick="atualizarStatusOrdem(${ordem.id},'Em andamento')"><i class="fa-solid fa-gear"></i> Em andamento</button>
+                                <button class="btn btn-primary" onclick="finalizarEtapa(${ordem.id})"><i class="fa-solid fa-check"></i> Concluir Etapa</button>
+                            </div>
+                        </div>`;
+                    }).join('') : '<p>Nenhuma ordem pendente no seu posto no momento.</p>'}
+                </div>`;
+        }
+    },
+
+    minhasOrdens: {
+        title: "Minhas Ordens de Produção",
+        description: "Histórico de ordens que passaram pelo seu posto",
+        render: () => {
+            const ids    = [...new Set(database.movimentacoes.filter(m => m.operador_id === currentUser.id).map(m => m.ordem_id))];
+            const ordens = database.ordens_producao.filter(o => ids.includes(o.id));
+            document.getElementById('contentBody').innerHTML = `
+                <div class="card">
+                    <h3 class="card-title"><i class="fa-solid fa-list"></i> Lista de Ordens</h3>
+                    <table>
+                        <thead><tr><th>Código OP</th><th>Cliente</th><th>Produto</th><th>Status</th><th>Data</th></tr></thead>
+                        <tbody>
+                            ${ordens.map(o => {
+                                const c = database.clientes.find(c => c.id === o.cliente_id);
+                                const p = database.produtos.find(p => p.id === o.produto_id);
+                                return `<tr>
+                                    <td><strong>${o.codigo_op}</strong></td>
+                                    <td>${c?.nome}</td><td>${p?.nome}</td>
+                                    <td><span class="badge ${o.status === 'Concluída' ? 'badge-success' : 'badge-warning'}">${o.status}</span></td>
+                                    <td>${o.data_criacao?.split('T')[0] || '-'}</td>
+                                </tr>`;
+                            }).join('') || '<tr><td colspan="5">Nenhuma ordem encontrada</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>`;
+        }
+    },
+
+    dashboardSupervisor: {
+        title: "Dashboard do Supervisor",
+        description: "Visão geral da produção em tempo real",
+        render: () => {
+            const ativas = database.ordens_producao.filter(o => o.status !== "Concluída");
+            document.getElementById('contentBody').innerHTML = `
+                <div class="grid-4">
+                    <div class="stat-card"><h3>Total de Ordens</h3><div class="value">${database.ordens_producao.length}</div></div>
+                    <div class="stat-card"><h3>Em Produção</h3><div class="value">${ativas.length}</div></div>
+                    <div class="stat-card"><h3>Concluídas</h3><div class="value">${database.ordens_producao.filter(o => o.status === "Concluída").length}</div></div>
+                    <div class="stat-card"><h3>NC Abertas</h3><div class="value" style="color:#c0392b">${database.naoConformidades.filter(n => n.status === 'aberta').length}</div></div>
+                </div>
+                <div class="card">
+                    <h3 class="card-title"><i class="fa-solid fa-chart-line"></i> Ordens em Produção</h3>
+                    ${ativas.map(o => {
+                        const c = database.clientes.find(c => c.id === o.cliente_id);
+                        const p = database.produtos.find(p => p.id === o.produto_id);
+                        return `<div class="stat-card" style="margin-bottom:1rem">
+                            <p><strong>${o.codigo_op}</strong> — ${c?.nome} — ${p?.nome}</p>
+                            <p>Etapa: <strong>${getPostoById(o.posto_atual)?.nome || 'Desconhecido'}</strong></p>
+                            <div class="progress-bar-container"><div class="progress-bar" style="width:${getProgressoOrdem(o)}%">${Math.round(getProgressoOrdem(o))}%</div></div>
+                        </div>`;
+                    }).join('') || '<p>Nenhuma ordem em produção</p>'}
+                </div>`;
+        }
+    },
+
+    rastreamentoOrdens: {
+        title: "Rastreamento de Ordens",
+        description: "Buscar e acompanhar ordens de produção",
+        render: () => {
+            document.getElementById('contentBody').innerHTML = `
+                <div class="card">
+                    <div class="search-bar">
+                        <input type="text" id="searchOrdem" placeholder="Digite o código (ex: OP-0001)">
+                        <button class="btn btn-primary" onclick="buscarOrdem()"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+                    </div>
+                    <div id="resultadoRastreamento"></div>
+                </div>
+                <div class="card">
+                    <h3 class="card-title"><i class="fa-solid fa-list"></i> Todas as Ordens</h3>
+                    <input type="text" id="filterOrdens" placeholder="Filtrar..." style="width:100%; padding:0.7rem; border:1px solid #B4BEC9; border-radius:0.5rem; margin-bottom:1rem;">
+                    <div id="listaOrdens"></div>
+                </div>`;
+            const render = () => {
+                const f = document.getElementById('filterOrdens').value.toLowerCase();
+                const lista = database.ordens_producao.filter(o =>
+                    o.codigo_op.toLowerCase().includes(f) ||
+                    database.clientes.find(c => c.id === o.cliente_id)?.nome.toLowerCase().includes(f)
+                );
+                document.getElementById('listaOrdens').innerHTML = lista.map(o => {
+                    const c = database.clientes.find(c => c.id === o.cliente_id);
+                    const p = database.produtos.find(p => p.id === o.produto_id);
+                    return `<div class="stat-card" style="margin-bottom:1rem; cursor:pointer" onclick="detalharOrdem(${o.id})">
+                        <p><strong>${o.codigo_op}</strong> — ${c?.nome}</p>
+                        <p>${p?.nome} | Qtd: ${o.quantidade}</p>
+                        <p>Status: <span class="badge ${o.status === 'Concluída' ? 'badge-success' : 'badge-warning'}">${o.status}</span> | Etapa: <strong>${getPostoById(o.posto_atual)?.nome || 'Finalizado'}</strong></p>
+                        <div class="progress-bar-container"><div class="progress-bar" style="width:${getProgressoOrdem(o)}%">${Math.round(getProgressoOrdem(o))}%</div></div>
+                    </div>`;
+                }).join('') || '<p>Nenhuma ordem encontrada</p>';
+            };
+            document.getElementById('filterOrdens').addEventListener('input', render);
+            render();
+        }
+    },
+
+    visaoPostos: {
+        title: "Visão dos Postos de Trabalho",
+        description: "O que está sendo produzido em cada posto",
+        render: () => {
+            document.getElementById('contentBody').innerHTML = `
+                <div class="grid-2">
+                    ${POSTOS_TRABALHO.map(posto => {
+                        const o = database.ordens_producao.find(o => o.posto_atual === posto.id && o.status !== "Concluída");
+                        const c = o ? database.clientes.find(c => c.id === o.cliente_id) : null;
+                        const p = o ? database.produtos.find(p => p.id === o.produto_id)  : null;
+                        return `<div class="card posto-card" onclick="detalharPosto(${posto.id})">
+                            <h3 class="card-title">${posto.nome}</h3>
+                            ${o ? `
+                                <p><strong>Ordem:</strong> ${o.codigo_op}</p>
+                                <p><strong>Cliente:</strong> ${c?.nome}</p>
+                                <p><strong>Produto:</strong> ${p?.nome}</p>
+                                <p><strong>Status:</strong> <span class="badge badge-warning">${o.status}</span></p>
+                                <div class="progress-bar-container"><div class="progress-bar" style="width:${getProgressoOrdem(o)}%">${Math.round(getProgressoOrdem(o))}%</div></div>
+                            ` : '<p>Posto ocioso</p>'}
+                        </div>`;
+                    }).join('')}
+                </div>`;
+        }
+    },
+
+    dashboardGerente: {
+        title: "Dashboard do Gerente",
+        description: "Gestão completa da produção",
+        render: () => {
+            const postos = POSTOS_TRABALHO.map(p => {
+                const o = database.ordens_producao.find(o => o.posto_atual === p.id && o.status !== "Concluída");
+                return { nome: p.nome, situacao: o ? `Produzindo ${o.codigo_op}` : "Ocioso", ocupado: !!o };
+            });
+            document.getElementById('contentBody').innerHTML = `
+                <div class="grid-4">
+                    <div class="stat-card"><h3>Total de Ordens</h3><div class="value">${database.ordens_producao.length}</div></div>
+                    <div class="stat-card"><h3>Ordens Ativas</h3><div class="value">${database.ordens_producao.filter(o => o.status !== "Concluída").length}</div></div>
+                    <div class="stat-card"><h3>Operadores</h3><div class="value">${database.usuarios.filter(u => u.perfil === "operador").length}</div></div>
+                    <div class="stat-card"><h3>NC Abertas</h3><div class="value" style="color:#c0392b">${database.naoConformidades.filter(n => n.status === 'aberta').length}</div></div>
+                </div>
+                <div class="grid-2">
+                    <div class="card">
+                        <h3 class="card-title"><i class="fa-solid fa-bolt"></i> Ações Rápidas</h3>
+                        <button class="btn btn-primary" onclick="navigateTo('cadastrarOperador')" style="width:100%; margin-bottom:1rem;"><i class="fa-solid fa-users"></i> Cadastrar Operador</button>
+                        <button class="btn btn-primary" onclick="navigateTo('criarOrdem')" style="width:100%;"><i class="fa-solid fa-file-circle-plus"></i> Criar Ordem de Produção</button>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title"><i class="fa-solid fa-chart-line"></i> Situação dos Postos</h3>
+                        ${postos.map(p => `
+                            <div class="posto-status">
+                                <span class="posto-nome">${p.nome}</span>
+                                <span class="posto-situacao ${p.ocupado ? 'ocupado' : 'ocioso'}">${p.situacao}</span>
+                            </div>`).join('')}
+                    </div>
+                </div>`;
+        }
+    },
+
+    cadastrarOperador: {
+        title: "Cadastrar Operador",
+        description: "Adicionar novo operador à equipe",
+        render: () => {
+            document.getElementById('contentBody').innerHTML = `
+                <div class="card">
+                    <h3 class="card-title"><i class="fa-solid fa-user-plus"></i> Novo Operador</h3>
+                    <form id="formOperador">
+                        <div class="form-group"><label>Nome Completo</label><input type="text" id="nomeOperador" required></div>
+                        <div class="form-group"><label>Matrícula</label><input type="text" id="matriculaOperador" required></div>
+                        <div class="form-group"><label>Senha</label><input type="password" id="senhaOperador" required value="123"></div>
+                        <div class="form-group">
+                            <label>Posto de Trabalho</label>
+                            <select id="postoOperador" required>${POSTOS_TRABALHO.map(p => `<option value="${p.id}">${p.nome}</option>`).join('')}</select>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Cadastrar</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3 class="card-title"><i class="fa-solid fa-users"></i> Operadores Cadastrados</h3>
+                    <table>
+                        <thead><tr><th>Nome</th><th>Matrícula</th><th>Posto</th></tr></thead>
+                        <tbody>${database.usuarios.filter(u => u.perfil === "operador").map(op => `
+                            <tr><td>${op.nome}</td><td>${op.matricula}</td><td>${getPostoById(op.posto_id)?.nome || '-'}</td></tr>`).join('')}
+                        </tbody>
+                    </table>
+                </div>`;
+            document.getElementById('formOperador').addEventListener('submit', (e) => {
+                e.preventDefault();
+                database.usuarios.push({
+                    id: database.usuarios.length + 1,
+                    nome: document.getElementById('nomeOperador').value,
+                    matricula: document.getElementById('matriculaOperador').value,
+                    senha: document.getElementById('senhaOperador').value,
+                    perfil: "operador",
+                    posto_id: parseInt(document.getElementById('postoOperador').value)
+                });
+                alert('Operador cadastrado!');
+                screens.cadastrarOperador.render();
+            });
+        }
+    },
+
+    criarOrdem: {
+        title: "Nova Ordem de Produção",
+        description: "Criar ordem para iniciar a produção",
+        render: () => {
+            document.getElementById('contentBody').innerHTML = `
+                <div class="card">
+                    <h3 class="card-title"><i class="fa-solid fa-file-circle-plus"></i> Criar Ordem</h3>
+                    <form id="formOrdem">
+                        <div class="form-group">
+                            <label>Cliente</label>
+                            <select id="clienteOrdem" required>
+                                <option value="">Selecione</option>
+                                ${database.clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Produto</label>
+                            <select id="produtoOrdem" required>
+                                <option value="">Selecione</option>
+                                ${database.produtos.map(p => `<option value="${p.id}">${p.nome} (${p.codigo})</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Quantidade</label>
+                            <input type="number" id="quantidadeOrdem" required min="1" value="1">
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Criar Ordem de Produção</button>
+                    </form>
+                </div>`;
+            document.getElementById('formOrdem').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const novaOrdem = {
+                    id:           database.ordens_producao.length + 1,
+                    codigo_op:    generateOPCode(),
+                    cliente_id:   parseInt(document.getElementById('clienteOrdem').value),
+                    produto_id:   parseInt(document.getElementById('produtoOrdem').value),
+                    quantidade:   parseInt(document.getElementById('quantidadeOrdem').value),
+                    status:       "Pendente",
+                    posto_atual:  1,
+                    etapa_atual:  "Corte",
+                    data_criacao: new Date().toISOString(),
+                    data_fim:     null
+                };
+                database.ordens_producao.push(novaOrdem);
+                database.movimentacoes.push({
+                    id: database.movimentacoes.length + 1,
+                    ordem_id: novaOrdem.id, operador_id: null,
+                    posto_id: 1, status: "Criada",
+                    data_hora: new Date().toLocaleString()
+                });
+                gerarPDFOrdem(novaOrdem);
+                document.getElementById('formOrdem').reset();
+                navigateTo('dashboardGerente');
+            });
+        }
+    },
+
+    documentos: {
+        title: "Ordens de Produção",
+        description: "Visualizar todos os PDFs gerados",
+        render: () => {
+            document.getElementById('contentBody').innerHTML = `
+                <div class="card">
+                    <h3 class="card-title"><i class="fa-solid fa-file-pdf"></i> PDFs de Ordens de Produção</h3>
+                    ${database.documentos.length > 0 ? `
+                        <div class="grid-2">
+                            ${database.documentos.map(doc => `
+                                <div class="stat-card documento-card" onclick="visualizarDocumento(${doc.id})">
+                                    <p style="font-size:2rem; color:#c0392b;"><i class="fa-solid fa-file-pdf"></i></p>
+                                    <p><strong>${doc.codigo_op}</strong></p>
+                                    <p style="font-size:0.85rem; color:#5c7e8c;">Emitido por: ${doc.criado_por}</p>
+                                    <p style="font-size:0.85rem; color:#5c7e8c;">${new Date(doc.data_criacao).toLocaleString('pt-BR')}</p>
+                                    <button class="btn btn-primary" style="margin-top:0.8rem; width:100%;">
+                                        <i class="fa-solid fa-eye"></i> Visualizar PDF
+                                    </button>
+                                </div>`).join('')}
+                        </div>
+                    ` : '<p>Nenhuma ordem gerada ainda. Crie uma ordem de produção para gerar o PDF.</p>'}
+                </div>`;
+        }
+    },
+
+    naoConformidades: {
+        title: "Não Conformidades",
+        description: "Gerenciar não conformidades registradas",
+        render: () => {
+            const abertas    = database.naoConformidades.filter(n => n.status === 'aberta');
+            const resolvidas = database.naoConformidades.filter(n => n.status === 'resolvida');
+            document.getElementById('contentBody').innerHTML = `
+                <div class="card">
+                    <h3 class="card-title"><i class="fa-solid fa-exclamation-triangle"></i> Abertas</h3>
+                    ${abertas.length > 0 ? abertas.map(nc => {
+                        const o = nc.ordem_id ? database.ordens_producao.find(o => o.id == nc.ordem_id) : null;
+                        return `<div class="stat-card non-conformidade-card">
+                            <p><strong>${nc.tipo === 'equipamento' ? 'Equipamento' : 'Produção'}</strong></p>
+                            ${nc.equipamento ? `<p><strong>Equipamento:</strong> ${nc.equipamento}</p>` : ''}
+                            ${o ? `<p><strong>Ordem:</strong> ${o.codigo_op}</p>` : ''}
+                            <p><strong>Descrição:</strong> ${nc.descricao}</p>
+                            <p><strong>Severidade:</strong> <span class="badge ${nc.severidade === 'critica' ? 'badge-danger' : nc.severidade === 'alta' ? 'badge-warning' : 'badge-info'}">${nc.severidade}</span></p>
+                            <p><strong>Registrado por:</strong> ${nc.registrado_por} em ${nc.data_registro}</p>
+                            ${(currentUser.perfil === 'gerente' || currentUser.perfil === 'supervisor') ? `
+                                <button class="btn btn-primary" style="margin-top:0.5rem" onclick="resolverNaoConformidade(${nc.id})">
+                                    <i class="fa-solid fa-check"></i> Marcar como Resolvida
+                                </button>` : ''}
+                        </div>`;
+                    }).join('') : '<p>Nenhuma não conformidade aberta.</p>'}
+                </div>
+                <div class="card">
+                    <h3 class="card-title"><i class="fa-solid fa-check-circle"></i> Resolvidas</h3>
+                    ${resolvidas.length > 0 ? resolvidas.map(nc => `
+                        <div class="stat-card">
+                            <p><strong>${nc.descricao}</strong></p>
+                            <p>Resolvido por: ${nc.resolvido_por} em ${nc.resolvido_em}</p>
+                            <p>Solução: ${nc.solucao || 'Não informada'}</p>
+                        </div>`).join('') : '<p>Nenhuma não conformidade resolvida.</p>'}
+                </div>`;
+        }
+    },
+
+    registrarNC: {
+        title: "Registrar Não Conformidade",
+        description: "Registrar problemas em equipamentos ou na produção",
+        render: () => {
+            document.getElementById('contentBody').innerHTML = `
+                <div class="grid-2">
+                    <div class="card" style="cursor:pointer" onclick="registrarNaoConformidade('equipamento')">
+                        <h3 class="card-title"><i class="fa-solid fa-microchip"></i> Equipamento</h3>
+                        <p>Problema com máquinas, ferramentas ou equipamentos</p>
+                        <button class="btn btn-danger" style="margin-top:1rem"><i class="fa-solid fa-tools"></i> Registrar</button>
+                    </div>
+                    <div class="card" style="cursor:pointer" onclick="registrarNaoConformidade('producao')">
+                        <h3 class="card-title"><i class="fa-solid fa-industry"></i> Produção</h3>
+                        <p>Problema durante o processo produtivo</p>
+                        <button class="btn btn-danger" style="margin-top:1rem"><i class="fa-solid fa-clipboard-list"></i> Registrar</button>
+                    </div>
+                </div>`;
+        }
+    }
+};
+
+function navigateTo(screenId) {
+    const screen = screens[screenId];
+    if (!screen) return;
+    document.getElementById('pageTitle').innerHTML = screen.title;
+    document.getElementById('pageDescription').innerHTML = typeof screen.description === 'function' ? screen.description() : screen.description;
+    screen.render();
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    const active = document.querySelector(`.nav-item[onclick*="${screenId}"]`);
+    if (active) active.classList.add('active');
+}
+
+function renderSidebar() {
+    const roles = { operador: 'Operador', supervisor: 'Supervisor', gerente: 'Gerente' };
+    document.getElementById('userName').textContent = currentUser.nome;
+    document.getElementById('userRole').textContent = roles[currentUser.perfil];
+    document.getElementById('navMenu').innerHTML = (menus[currentUser.perfil] || []).map(item => `
+        <div class="nav-item" onclick="navigateTo('${item.id}')">
+            <i class="${item.icone}"></i>
+            <div class="text">${item.nome}</div>
+        </div>`).join('');
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById('appContainer').style.display = 'none';
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('loginForm').reset();
+}
+
+window.atualizarStatusOrdem = (ordemId, status) => {
+    const o = database.ordens_producao.find(o => o.id === ordemId);
+    if (o) {
+        o.status = status;
+        database.movimentacoes.push({ id: database.movimentacoes.length + 1, ordem_id: ordemId, operador_id: currentUser.id, posto_id: currentUser.posto_id, status, data_hora: new Date().toLocaleString() });
+        alert(`Status da ordem ${o.codigo_op} atualizado para ${status}`);
+        navigateTo('dashboardOperador');
+    }
+};
+
+window.finalizarEtapa = (ordemId) => {
+    const o = database.ordens_producao.find(o => o.id === ordemId);
+    if (o) {
+        const ant = getPostoById(o.posto_atual)?.nome;
+        avancarOrdem(ordemId);
+        database.movimentacoes.push({ id: database.movimentacoes.length + 1, ordem_id: ordemId, operador_id: currentUser.id, posto_id: currentUser.posto_id, status: "Etapa Concluída", observacao: `Etapa de ${ant} finalizada`, data_hora: new Date().toLocaleString() });
+        alert(o.status === "Concluída" ? 'Ordem finalizada!' : 'Ordem encaminhada para o próximo posto.');
+        navigateTo('dashboardOperador');
+    }
+};
+
+window.buscarOrdem = () => {
+    const codigo = document.getElementById('searchOrdem').value;
+    const o = database.ordens_producao.find(o => o.codigo_op.toLowerCase() === codigo.toLowerCase());
+    const el = document.getElementById('resultadoRastreamento');
+    if (!o) { el.innerHTML = '<p>Ordem não encontrada</p>'; return; }
+    const c = database.clientes.find(c => c.id === o.cliente_id);
+    const p = database.produtos.find(p => p.id === o.produto_id);
+    const movs = database.movimentacoes.filter(m => m.ordem_id === o.id);
+    el.innerHTML = `<div class="stat-card">
+        <h3>${o.codigo_op}</h3>
+        <p><strong>Cliente:</strong> ${c?.nome} | <strong>Produto:</strong> ${p?.nome} | <strong>Qtd:</strong> ${o.quantidade}</p>
+        <p><strong>Status:</strong> <span class="badge ${o.status === 'Concluída' ? 'badge-success' : 'badge-warning'}">${o.status}</span></p>
+        <div class="progress-bar-container"><div class="progress-bar" style="width:${getProgressoOrdem(o)}%">${Math.round(getProgressoOrdem(o))}%</div></div>
+        <h4 style="margin-top:1rem">Histórico:</h4>
+        ${movs.map(m => `<p>• ${m.data_hora} — ${m.status}${m.observacao ? ` — ${m.observacao}` : ''}</p>`).join('')}
+    </div>`;
+};
+
+window.detalharOrdem = (ordemId) => {
+    const o = database.ordens_producao.find(o => o.id === ordemId);
+    if (o) { document.getElementById('searchOrdem').value = o.codigo_op; buscarOrdem(); }
+};
+
+window.detalharPosto = (postoId) => {
+    const p = getPostoById(postoId);
+    const o = database.ordens_producao.find(o => o.posto_atual === postoId && o.status !== "Concluída");
+    alert(`Posto: ${p.nome}\n${o ? `Ordem atual: ${o.codigo_op}` : 'Posto ocioso'}`);
+};
+
+window.resolverNaoConformidade = (ncId) => {
+    const nc = database.naoConformidades.find(n => n.id === ncId);
+    if (!nc) return;
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width:500px; height:auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+                <h3><i class="fa-solid fa-circle-check" style="color:#159A9C;"></i> Resolver Não Conformidade</h3>
+                <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">
+                    <i class="fa-solid fa-times"></i> Fechar
+                </button>
+            </div>
+            <div style="background:#F9FCFA; border-left:4px solid #c0392b; border-radius:0.5rem; padding:1rem; margin-bottom:1.2rem;">
+                <p style="font-size:0.85rem; color:#5c7e8c; margin-bottom:0.3rem;">Problema registrado:</p>
+                <p style="color:#002333; font-weight:500;">${nc.descricao}</p>
+            </div>
+            <form id="formResolverNC">
+                <div class="form-group">
+                    <label><i class="fa-solid fa-pen-to-square"></i> Como o problema foi resolvido?</label>
+                    <textarea id="solucaoNC" rows="5" required placeholder="Descreva detalhadamente a solução aplicada..." style="resize:vertical;"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;">
+                    <i class="fa-solid fa-check"></i> Confirmar Resolução
+                </button>
+            </form>
+        </div>`;
+    document.body.appendChild(modal);
+    document.getElementById('formResolverNC').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const solucao = document.getElementById('solucaoNC').value.trim();
+        if (!solucao) return;
+        nc.status        = 'resolvida';
+        nc.resolvido_em  = new Date().toLocaleString();
+        nc.resolvido_por = currentUser.nome;
+        nc.solucao       = solucao;
+        modal.remove();
+        navigateTo('naoConformidades');
+    });
+};
+
+window.registrarNaoConformidade = registrarNaoConformidade;
+window.visualizarDocumento      = visualizarDocumento;
+window.fecharModal              = fecharModal;
+
+document.getElementById('loginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const mat   = document.getElementById('matricula').value;
+    const senha = document.getElementById('senha').value;
+    const user  = database.usuarios.find(u => u.matricula === mat && u.senha === senha);
+    if (user) {
+        currentUser = user;
+        document.getElementById('loginPage').style.display  = 'none';
+        document.getElementById('appContainer').style.display = 'flex';
+        renderSidebar();
+        const def = user.perfil === 'operador' ? 'dashboardOperador' : user.perfil === 'supervisor' ? 'dashboardSupervisor' : 'dashboardGerente';
+        navigateTo(def);
+    } else {
+        alert('Matrícula ou senha inválidos!');
+    }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', logout);
+</script>
+</body>
+</html>
